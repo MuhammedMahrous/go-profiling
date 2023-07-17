@@ -19,7 +19,7 @@ type HelloHandler struct {
 }
 
 func NewHelloHandler(version int) (*HelloHandler, error) {
-	if version != 1 && version != 2 && version != 3 {
+	if version != 1 && version != 2 && version != 3 && version != 4 {
 		return nil, fmt.Errorf("invalid version %d", version)
 	}
 
@@ -79,6 +79,27 @@ func (h *HelloHandler) sayHelloV3(rw http.ResponseWriter, r *http.Request) {
 			response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
 		}
 	}
+	res, _ := json.Marshal(response)
+
+	//TODO: Marshal json directly to output stream / http socket
+	rw.Write(res)
+}
+
+func (h *HelloHandler) sayHelloV4(rw http.ResponseWriter, r *http.Request) {
+	t := time.NewTicker(time.Microsecond)
+	response := Response{RequestID: uuid.NewString()}
+
+	for i := 0; i < 100; i++ {
+		select {
+		case <-t.C:
+			response.Messages = append(response.Messages, "hello-lucky-"+strconv.Itoa(i))
+		default:
+			response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
+		}
+	}
+
+	t.Stop()
+
 	res, _ := json.Marshal(response)
 
 	//TODO: Marshal json directly to output stream / http socket
