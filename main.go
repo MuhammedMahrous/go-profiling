@@ -13,38 +13,40 @@ import (
 func main() {
 	version, cpuProfiling, memProfiling := readArguments()
 
-	profilerStoppers := configureProfiling(cpuProfiling, memProfiling)
-	defer stopProfilers(profilerStoppers)
-
-	listenAndServe(*version)
-}
-
-func stopProfilers(s []interface{ Stop() }) {
-	for i := range s {
-		s[i].Stop()
+	if profilerStopper := configureProfiling(cpuProfiling, memProfiling); profilerStopper != nil {
+		defer profilerStopper.Stop()
 	}
+
+	listenAndServe(version)
 }
 
-func configureProfiling(cpuProfiling, memProfiling *bool) (profilerStoppers []interface{ Stop() }) {
+func configureProfiling(cpuProfiling, memProfiling bool) (profilerStopper interface{ Stop() }) {
 	// Increasing the sampling rate
 	runtime.SetCPUProfileRate(1000)
 
-	switch {
-	case cpuProfiling != nil && *cpuProfiling:
-		profilerStoppers = append(profilerStoppers, profile.Start(profile.CPUProfile, profile.ProfilePath(".")))
-	case memProfiling != nil && *memProfiling:
-		profilerStoppers = append(profilerStoppers, profile.Start(profile.MemProfile, profile.ProfilePath(".")))
+	if cpuProfiling {
+		profilerStopper = profile.Start(profile.CPUProfile, profile.ProfilePath("."))
+	} else if memProfiling {
+		profilerStopper = profile.Start(profile.MemProfile, profile.ProfilePath("."))
 	}
 
 	return
 }
 
-func readArguments() (version *int, cpuProfiling, memProfiling *bool) {
-	version = flag.Int("v", 1, "selects the implementation version")
-	cpuProfiling = flag.Bool("pcpu", false, "enables CPU profiling")
-	memProfiling = flag.Bool("pmem", false, "enables memory profiling")
-
+func readArguments() (version int, cpuProfiling, memProfiling bool) {
+	pVersion := flag.Int("v", 1, "selects the implementation version")
+	pCpuProfiling := flag.Bool("pcpu", false, "enables CPU profiling")
+	pMemProfiling := flag.Bool("pmem", false, "enables memory profiling")
 	flag.Parse()
+
+	version = *pVersion
+	cpuProfiling = *pCpuProfiling
+	memProfiling = *pMemProfiling
+
+	if cpuProfiling && memProfiling {
+		panic("Cannot enable multiple profilers")
+	}
+
 	return
 }
 
