@@ -6,7 +6,6 @@ import (
 	"runtime"
 
 	"github.com/pkg/profile"
-
 	"go-profiling/handler"
 )
 
@@ -20,11 +19,11 @@ func main() {
 	runtime.SetCPUProfileRate(1000)
 
 	// Comment out the needed profile
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	//defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 	//defer profile.Start(profile.GoroutineProfile).Stop()
 	//defer profile.Start(profile.BlockProfile).Stop()
 	//defer profile.Start(profile.MemProfileHeap).Stop()
-	//defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
+	defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
 
 	listenAndServe(*version)
 }

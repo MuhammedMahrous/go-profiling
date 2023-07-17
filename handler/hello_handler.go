@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type Response struct {
@@ -18,7 +19,7 @@ type HelloHandler struct {
 }
 
 func NewHelloHandler(version int) (*HelloHandler, error) {
-	if version != 1 && version != 2 {
+	if version != 1 && version != 2 && version != 3 {
 		return nil, fmt.Errorf("invalid version %d", version)
 	}
 
@@ -31,6 +32,8 @@ func (h *HelloHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		h.sayHelloV1(rw, r)
 	case 2:
 		h.sayHelloV2(rw, r)
+	case 3:
+		h.sayHelloV3(rw, r)
 	default:
 		rw.WriteHeader(500)
 		rw.Write([]byte("Invalid App Version!"))
@@ -58,7 +61,24 @@ func (h *HelloHandler) sayHelloV2(rw http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 100; i++ {
 		response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
 	}
+	res, _ := json.Marshal(response)
 
+	//TODO: Marshal json directly to output stream / http socket
+	rw.Write(res)
+}
+
+func (h *HelloHandler) sayHelloV3(rw http.ResponseWriter, r *http.Request) {
+	t := time.NewTicker(time.Microsecond)
+	response := Response{RequestID: uuid.NewString()}
+
+	for i := 0; i < 100; i++ {
+		select {
+		case <-t.C:
+			response.Messages = append(response.Messages, "hello-lucky-"+strconv.Itoa(i))
+		default:
+			response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
+		}
+	}
 	res, _ := json.Marshal(response)
 
 	//TODO: Marshal json directly to output stream / http socket
