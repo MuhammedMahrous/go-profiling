@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const NUM_USERS = 1000
+
 type Response struct {
 	RequestID string
 	Messages  []string
@@ -48,25 +50,23 @@ func (h *HelloHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 func (h *HelloHandler) sayHelloV1(rw http.ResponseWriter, r *http.Request) {
 	response := Response{RequestID: uuid.NewString()}
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < NUM_USERS; i++ {
 		response.Messages = append(response.Messages, "hello-"+uuid.NewString())
 	}
 
 	res, _ := json.Marshal(response)
 
-	//TODO: Marshal json directly to output stream / http socket
 	rw.Write(res)
 }
 
 func (h *HelloHandler) sayHelloV2(rw http.ResponseWriter, r *http.Request) {
 	response := Response{RequestID: uuid.NewString()}
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < NUM_USERS; i++ {
 		response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
 	}
 	res, _ := json.Marshal(response)
 
-	//TODO: Marshal json directly to output stream / http socket
 	rw.Write(res)
 }
 
@@ -74,7 +74,7 @@ func (h *HelloHandler) sayHelloV3(rw http.ResponseWriter, r *http.Request) {
 	t := time.NewTicker(time.Microsecond)
 	response := Response{RequestID: uuid.NewString()}
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < NUM_USERS; i++ {
 		select {
 		case <-t.C:
 			response.Messages = append(response.Messages, "hello-lucky-"+strconv.Itoa(i))
@@ -86,7 +86,6 @@ func (h *HelloHandler) sayHelloV3(rw http.ResponseWriter, r *http.Request) {
 
 	res, _ := json.Marshal(response)
 
-	//TODO: Marshal json directly to output stream / http socket
 	rw.Write(res)
 }
 
@@ -94,7 +93,7 @@ func (h *HelloHandler) sayHelloV4(rw http.ResponseWriter, r *http.Request) {
 	t := time.NewTicker(time.Microsecond)
 	response := Response{RequestID: uuid.NewString()}
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < NUM_USERS; i++ {
 		select {
 		case <-t.C:
 			response.Messages = append(response.Messages, "hello-lucky-"+strconv.Itoa(i))
@@ -107,6 +106,5 @@ func (h *HelloHandler) sayHelloV4(rw http.ResponseWriter, r *http.Request) {
 
 	res, _ := json.Marshal(response)
 
-	//TODO: Marshal json directly to output stream / http socket
 	rw.Write(res)
 }
