@@ -2,21 +2,20 @@ package main
 
 import (
 	"flag"
-	"github.com/pkg/profile"
-	"go-profiling/handler"
 	"net/http"
 	"runtime"
+
+	"github.com/pkg/profile"
+
+	"go-profiling/handler"
 )
 
 func main() {
 	var version = flag.Int("v", 1, "selects the implementation version")
 	flag.Parse()
 
-	configureProfiling()
-	listenAndServe(*version)
-}
+	// Configure profiling
 
-func configureProfiling() {
 	// Increasing the sampling rate
 	runtime.SetCPUProfileRate(1000)
 
@@ -26,6 +25,8 @@ func configureProfiling() {
 	//defer profile.Start(profile.BlockProfile).Stop()
 	//defer profile.Start(profile.MemProfileHeap).Stop()
 	//defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
+
+	listenAndServe(*version)
 }
 
 func listenAndServe(version int) {
@@ -40,4 +41,5 @@ func listenAndServe(version int) {
 	if err != nil {
 		panic(err)
 	}
+
 }
