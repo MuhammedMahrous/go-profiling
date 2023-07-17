@@ -3,10 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Response struct {
@@ -79,6 +80,8 @@ func (h *HelloHandler) sayHelloV3(rw http.ResponseWriter, r *http.Request) {
 			response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
 		}
 	}
+	t.Stop()
+
 	res, _ := json.Marshal(response)
 
 	//TODO: Marshal json directly to output stream / http socket

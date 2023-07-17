@@ -6,26 +6,46 @@ import (
 	"runtime"
 
 	"github.com/pkg/profile"
+
 	"go-profiling/handler"
 )
 
 func main() {
-	var version = flag.Int("v", 1, "selects the implementation version")
-	flag.Parse()
+	version, cpuProfiling, memProfiling := readArguments()
 
-	// Configure profiling
+	profilerStoppers := configureProfiling(cpuProfiling, memProfiling)
+	defer stopProfilers(profilerStoppers)
 
+	listenAndServe(*version)
+}
+
+func stopProfilers(s []interface{ Stop() }) {
+	for i := range s {
+		s[i].Stop()
+	}
+}
+
+func configureProfiling(cpuProfiling, memProfiling *bool) (profilerStoppers []interface{ Stop() }) {
 	// Increasing the sampling rate
 	runtime.SetCPUProfileRate(1000)
 
-	// Comment out the needed profile
-	//defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
-	//defer profile.Start(profile.GoroutineProfile).Stop()
-	//defer profile.Start(profile.BlockProfile).Stop()
-	//defer profile.Start(profile.MemProfileHeap).Stop()
-	defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
+	switch {
+	case cpuProfiling != nil && *cpuProfiling:
+		profilerStoppers = append(profilerStoppers, profile.Start(profile.CPUProfile, profile.ProfilePath(".")))
+	case memProfiling != nil && *memProfiling:
+		profilerStoppers = append(profilerStoppers, profile.Start(profile.MemProfile, profile.ProfilePath(".")))
+	}
 
-	listenAndServe(*version)
+	return
+}
+
+func readArguments() (version *int, cpuProfiling, memProfiling *bool) {
+	version = flag.Int("v", 1, "selects the implementation version")
+	cpuProfiling = flag.Bool("pcpu", false, "enables CPU profiling")
+	memProfiling = flag.Bool("pmem", false, "enables memory profiling")
+
+	flag.Parse()
+	return
 }
 
 func listenAndServe(version int) {
