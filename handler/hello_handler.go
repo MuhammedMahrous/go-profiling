@@ -35,6 +35,8 @@ func (h *HelloHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		h.sayHelloV2(rw, r)
 	case 3:
 		h.sayHelloV3(rw, r)
+	case 4:
+		h.sayHelloV4(rw, r)
 	default:
 		rw.WriteHeader(500)
 		rw.Write([]byte("Invalid App Version!"))
