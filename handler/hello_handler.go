@@ -82,7 +82,6 @@ func (h *HelloHandler) sayHelloV3(rw http.ResponseWriter, r *http.Request) {
 			response.Messages = append(response.Messages, "hello-"+strconv.Itoa(i))
 		}
 	}
-	t.Stop()
 
 	res, _ := json.Marshal(response)
 
